@@ -1,486 +1,815 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Rock · Paper · Scissors · P2P</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      background: linear-gradient(145deg, #0b1a2e, #1a2f3f);
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-family: 'Segoe UI', system-ui, sans-serif;
-      padding: 1.5rem;
-    }
-    .game-container {
-      background: rgba(22, 40, 56, 0.75);
-      backdrop-filter: blur(6px);
-      border-radius: 3.5rem;
-      padding: 2.5rem 2.8rem;
-      max-width: 850px;
-      width: 100%;
-      box-shadow: 0 25px 50px -8px rgba(0,0,0,0.8);
-      border: 1px solid rgba(255,255,255,0.04);
-    }
-    h1 {
-      text-align: center;
-      color: #d6e6f5;
-      font-weight: 500;
-      letter-spacing: 3px;
-      font-size: 2.5rem;
-      margin-bottom: 1.2rem;
-      text-shadow: 0 4px 12px rgba(0,0,0,0.6);
-    }
-    .mode-toggle {
-      text-align: center;
-      margin-bottom: 1.5rem;
-    }
-    .mode-btn {
-      background: #1b3343;
-      border: 2px solid #3f637a;
-      padding: 0.6rem 1.8rem;
-      border-radius: 60px;
-      color: #e3f0fa;
-      font-weight: 600;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: all 0.2s;
-      margin: 0 0.5rem;
-    }
-    .mode-btn.active {
-      background: #2a5770;
-      border-color: #78aac9;
-      box-shadow: 0 0 20px rgba(120, 170, 201, 0.3);
-    }
-    .mode-btn:hover {
-      background: #264a5e;
-      border-color: #5d88a3;
-    }
-    .scoreboard {
-      display: flex;
-      justify-content: space-between;
-      background: #0e1f2b;
-      padding: 0.9rem 2rem;
-      border-radius: 60px;
-      margin-bottom: 2rem;
-      color: #cbdde9;
-      border: 1px solid #2d4a5b;
-      font-weight: 500;
-      font-size: 1.2rem;
-    }
-    .score-item {
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-    }
-    .score-badge {
-      background: #1d3a4b;
-      padding: 0.2rem 1rem;
-      border-radius: 40px;
-      color: #b3d6ee;
-      font-weight: 600;
-      min-width: 2.8rem;
-      text-align: center;
-    }
-    .player-indicator {
-      text-align: center;
-      font-size: 1.4rem;
-      color: #b3d6ee;
-      padding: 0.5rem;
-      background: #0e1f2b;
-      border-radius: 40px;
-      margin-bottom: 1.2rem;
-      border: 2px solid #2d4a5b;
-    }
-    .choice-area {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 1.2rem;
-      margin: 1.5rem 0 2rem;
-    }
-    .choice-btn {
-      background: #1b3343;
-      border: none;
-      padding: 0.9rem 1.8rem;
-      border-radius: 60px;
-      font-size: 1.4rem;
-      font-weight: 600;
-      color: #e3f0fa;
-      box-shadow: 0 8px 0 #0a1924;
-      cursor: pointer;
-      transition: all 0.08s ease-in;
-      border: 1px solid #3f637a;
-      flex: 0 1 auto;
-    }
-    .choice-btn:active {
-      transform: translateY(6px);
-      box-shadow: 0 2px 0 #0a1924;
-    }
-    .choice-btn:hover {
-      background: #264a5e;
-      border-color: #5d88a3;
-      color: white;
-    }
-    .choice-btn:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-      transform: translateY(4px);
-      box-shadow: 0 4px 0 #0a1924;
-    }
-    .round-display {
-      background: #122b38;
-      border-radius: 40px;
-      padding: 1.6rem 1.8rem;
-      margin: 1.5rem 0;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-around;
-      align-items: center;
-      gap: 0.8rem 1.5rem;
-      border: 1px solid #2d556b;
-    }
-    .pick-box {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.3rem;
-    }
-    .pick-label {
-      font-size: 0.8rem;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      color: #8bb2cb;
-    }
-    .pick-value {
-      background: #06212e;
-      padding: 0.5rem 2rem;
-      border-radius: 60px;
-      font-size: 1.8rem;
-      font-weight: 600;
-      color: #ddf0ff;
-      min-width: 110px;
-      text-align: center;
-      border: 1px solid #38728b;
-    }
-    .vs-badge {
-      font-size: 1.8rem;
-      font-weight: 300;
-      color: #709bb3;
-      letter-spacing: 3px;
-    }
-    .result-message {
-      text-align: center;
-      font-size: 1.8rem;
-      font-weight: 600;
-      padding: 0.7rem 1rem;
-      border-radius: 60px;
-      background: #0d2533;
-      color: #d6ecfa;
-      border-left: 6px solid #3d89b0;
-      margin: 1.5rem 0;
-    }
-    .result-message.win { border-left-color: #3ed68b; color: #b0f0d0; }
-    .result-message.lose { border-left-color: #e4686b; color: #fcc9ca; }
-    .result-message.tie { border-left-color: #d4b87a; color: #f0e2b0; }
-    .play-again-area {
-      display: flex;
-      justify-content: center;
-      gap: 1rem;
-      margin-top: 1.5rem;
-      flex-wrap: wrap;
-    }
-    .action-btn {
-      background: #1e3f4f;
-      border: 1px solid #4f7f99;
-      padding: 0.9rem 2.5rem;
-      border-radius: 60px;
-      font-size: 1.2rem;
-      font-weight: 600;
-      color: #e3f0fa;
-      box-shadow: 0 6px 0 #0b202b;
-      cursor: pointer;
-      transition: all 0.08s ease-in;
-    }
-    .action-btn:active {
-      transform: translateY(6px);
-      box-shadow: 0 1px 0 #0b202b;
-    }
-    .action-btn:hover {
-      background: #2a5770;
-      border-color: #78aac9;
-    }
-    .footer-note {
-      text-align: center;
-      color: #5b7e92;
-      margin-top: 1.8rem;
-      font-size: 0.9rem;
-      border-top: 1px solid #264657;
-      padding-top: 1.5rem;
-    }
-    @media (max-width: 550px) {
-      .game-container { padding: 1.8rem 1.2rem; }
-      h1 { font-size: 2rem; }
-      .choice-btn { font-size: 1.2rem; padding: 0.7rem 1.2rem; }
-      .pick-value { font-size: 1.4rem; min-width: 80px; }
-    }
-  </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>P2P Rock-Paper-Scissors</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background: linear-gradient(145deg, #0b1a2e, #1a2f3f);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            padding: 1.5rem;
+        }
+        .game-container {
+            background: rgba(22, 40, 56, 0.85);
+            backdrop-filter: blur(6px);
+            border-radius: 3.5rem;
+            padding: 2.5rem 2.8rem;
+            max-width: 900px;
+            width: 100%;
+            box-shadow: 0 25px 50px -8px rgba(0, 0, 0, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+        h1 {
+            text-align: center;
+            color: #d6e6f5;
+            font-weight: 500;
+            letter-spacing: 3px;
+            font-size: 2.5rem;
+            margin-bottom: 1.2rem;
+            text-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+        }
+        .connection-status {
+            text-align: center;
+            padding: 0.8rem;
+            border-radius: 40px;
+            background: #0e1f2b;
+            color: #cbdde9;
+            border: 2px solid #2d4a5b;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        .connection-status.connected {
+            border-color: #3ed68b;
+            color: #b0f0d0;
+        }
+        .connection-status.disconnected {
+            border-color: #e4686b;
+            color: #fcc9ca;
+        }
+        .connection-status.connecting {
+            border-color: #d4b87a;
+            color: #f0e2b0;
+        }
+        .p2p-setup {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        .setup-box {
+            background: #0e1f2b;
+            border-radius: 30px;
+            padding: 1.5rem;
+            border: 1px solid #2d4a5b;
+        }
+        .setup-box h3 {
+            color: #b3d6ee;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+        .setup-box textarea {
+            width: 100%;
+            height: 120px;
+            background: #06212e;
+            border: 1px solid #38728b;
+            border-radius: 16px;
+            color: #ddf0ff;
+            padding: 0.8rem;
+            font-size: 0.8rem;
+            resize: vertical;
+            font-family: monospace;
+        }
+        .setup-box textarea:focus {
+            outline: 2px solid #8fcbff;
+        }
+        .setup-box button {
+            background: #1b3343;
+            border: none;
+            padding: 0.7rem 1.5rem;
+            border-radius: 40px;
+            color: #e3f0fa;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 0.8rem;
+            border: 1px solid #3f637a;
+            transition: all 0.2s;
+            width: 100%;
+        }
+        .setup-box button:hover {
+            background: #264a5e;
+            border-color: #5d88a3;
+        }
+        .setup-box button:active {
+            transform: scale(0.97);
+        }
+        .scoreboard {
+            display: flex;
+            justify-content: space-between;
+            background: #0e1f2b;
+            padding: 0.9rem 2rem;
+            border-radius: 60px;
+            margin: 1.5rem 0;
+            color: #cbdde9;
+            border: 1px solid #2d4a5b;
+            font-weight: 500;
+            font-size: 1.2rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .score-item {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+        .score-badge {
+            background: #1d3a4b;
+            padding: 0.2rem 1rem;
+            border-radius: 40px;
+            color: #b3d6ee;
+            font-weight: 600;
+            min-width: 2.8rem;
+            text-align: center;
+        }
+        .player-indicator {
+            text-align: center;
+            font-size: 1.4rem;
+            color: #b3d6ee;
+            padding: 0.5rem;
+            background: #0e1f2b;
+            border-radius: 40px;
+            margin-bottom: 1.2rem;
+            border: 2px solid #2d4a5b;
+        }
+        .choice-area {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1.2rem;
+            margin: 1.5rem 0 2rem;
+        }
+        .choice-btn {
+            background: #1b3343;
+            border: none;
+            padding: 0.9rem 1.8rem;
+            border-radius: 60px;
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #e3f0fa;
+            box-shadow: 0 8px 0 #0a1924;
+            cursor: pointer;
+            transition: all 0.08s ease-in;
+            border: 1px solid #3f637a;
+            flex: 0 1 auto;
+        }
+        .choice-btn:active {
+            transform: translateY(6px);
+            box-shadow: 0 2px 0 #0a1924;
+        }
+        .choice-btn:hover {
+            background: #264a5e;
+            border-color: #5d88a3;
+            color: white;
+        }
+        .choice-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: translateY(4px);
+            box-shadow: 0 4px 0 #0a1924;
+        }
+        .choice-btn.waiting {
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0%,
+            100% {
+                opacity: 0.6;
+            }
+            50% {
+                opacity: 1;
+            }
+        }
+        .round-display {
+            background: #122b38;
+            border-radius: 40px;
+            padding: 1.6rem 1.8rem;
+            margin: 1.5rem 0;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            align-items: center;
+            gap: 0.8rem 1.5rem;
+            border: 1px solid #2d556b;
+        }
+        .pick-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.3rem;
+        }
+        .pick-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #8bb2cb;
+        }
+        .pick-value {
+            background: #06212e;
+            padding: 0.5rem 2rem;
+            border-radius: 60px;
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #ddf0ff;
+            min-width: 110px;
+            text-align: center;
+            border: 1px solid #38728b;
+        }
+        .pick-value.hidden {
+            filter: blur(8px);
+            user-select: none;
+        }
+        .vs-badge {
+            font-size: 1.8rem;
+            font-weight: 300;
+            color: #709bb3;
+            letter-spacing: 3px;
+        }
+        .result-message {
+            text-align: center;
+            font-size: 1.8rem;
+            font-weight: 600;
+            padding: 0.7rem 1rem;
+            border-radius: 60px;
+            background: #0d2533;
+            color: #d6ecfa;
+            border-left: 6px solid #3d89b0;
+            margin: 1.5rem 0;
+            min-height: 4rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .result-message.win {
+            border-left-color: #3ed68b;
+            color: #b0f0d0;
+        }
+        .result-message.lose {
+            border-left-color: #e4686b;
+            color: #fcc9ca;
+        }
+        .result-message.tie {
+            border-left-color: #d4b87a;
+            color: #f0e2b0;
+        }
+        .result-message.waiting {
+            border-left-color: #d4b87a;
+            color: #f0e2b0;
+            animation: pulse 1.5s infinite;
+        }
+        .action-area {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .action-btn {
+            background: #1e3f4f;
+            border: 1px solid #4f7f99;
+            padding: 0.9rem 2.5rem;
+            border-radius: 60px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #e3f0fa;
+            box-shadow: 0 6px 0 #0b202b;
+            cursor: pointer;
+            transition: all 0.08s ease-in;
+        }
+        .action-btn:active {
+            transform: translateY(6px);
+            box-shadow: 0 1px 0 #0b202b;
+        }
+        .action-btn:hover {
+            background: #2a5770;
+            border-color: #78aac9;
+        }
+        .action-btn.danger {
+            border-color: #e4686b;
+            color: #fcc9ca;
+        }
+        .action-btn.danger:hover {
+            background: #5a2a2a;
+        }
+        .footer-note {
+            text-align: center;
+            color: #5b7e92;
+            margin-top: 1.8rem;
+            font-size: 0.9rem;
+            border-top: 1px solid #264657;
+            padding-top: 1.5rem;
+        }
+        .hidden {
+            display: none !important;
+        }
+        @media (max-width: 700px) {
+            .p2p-setup {
+                grid-template-columns: 1fr;
+            }
+            .game-container {
+                padding: 1.5rem 1.2rem;
+            }
+            h1 {
+                font-size: 2rem;
+            }
+            .choice-btn {
+                font-size: 1.2rem;
+                padding: 0.7rem 1.2rem;
+            }
+            .pick-value {
+                font-size: 1.4rem;
+                min-width: 80px;
+            }
+        }
+    </style>
 </head>
 <body>
-<div class="game-container">
-  <h1>✧ ROCK · PAPER · SCISSORS ✧</h1>
+    <div class="game-container">
+        <h1>🌐 P2P Rock·Paper·Scissors</h1>
 
-  <div class="mode-toggle">
-    <button class="mode-btn active" data-mode="pve">🤖 vs Computer</button>
-    <button class="mode-btn" data-mode="pvp">👥 Player vs Player</button>
-  </div>
+        <!-- Connection Status -->
+        <div class="connection-status disconnected" id="connectionStatus">
+            🔴 Disconnected - Set up peer connection
+        </div>
 
-  <div class="scoreboard">
-    <div class="score-item" id="p1ScoreLabel">👤 P1 <span class="score-badge" id="p1Score">0</span></div>
-    <div class="score-item" id="p2ScoreLabel">👤 P2 <span class="score-badge" id="p2Score">0</span></div>
-    <div class="score-item">🏳️ Ties <span class="score-badge" id="tiesScore">0</span></div>
-  </div>
+        <!-- P2P Setup -->
+        <div class="p2p-setup" id="p2pSetup">
+            <div class="setup-box">
+                <h3>📤 Your Offer (Share this)</h3>
+                <textarea id="localOffer" readonly placeholder="Create offer first..."></textarea>
+                <button id="createOfferBtn">🔗 Create Offer</button>
+            </div>
+            <div class="setup-box">
+                <h3>📥 Paste Partner's Offer</h3>
+                <textarea id="remoteOffer" placeholder="Paste offer from partner..."></textarea>
+                <button id="connectBtn">🔗 Connect</button>
+            </div>
+        </div>
 
-  <div class="player-indicator" id="turnIndicator">🎯 Player 1's turn</div>
+        <!-- Scoreboard -->
+        <div class="scoreboard">
+            <div class="score-item">👤 You <span class="score-badge" id="myScore">0</span></div>
+            <div class="score-item">👤 Opponent <span class="score-badge" id="oppScore">0</span></div>
+            <div class="score-item">🏳️ Ties <span class="score-badge" id="tiesScore">0</span></div>
+        </div>
 
-  <div class="choice-area" id="choiceArea">
-    <button class="choice-btn" data-move="rock">🪨 Rock</button>
-    <button class="choice-btn" data-move="paper">📄 Paper</button>
-    <button class="choice-btn" data-move="scissors">✂️ Scissors</button>
-  </div>
+        <!-- Player Indicator -->
+        <div class="player-indicator" id="turnIndicator">⏳ Waiting for opponent...</div>
 
-  <div class="round-display">
-    <div class="pick-box">
-      <span class="pick-label" id="p1Label">Player 1</span>
-      <span class="pick-value" id="p1Pick">—</span>
+        <!-- Choice Buttons -->
+        <div class="choice-area" id="choiceArea">
+            <button class="choice-btn" data-move="rock" disabled>🪨 Rock</button>
+            <button class="choice-btn" data-move="paper" disabled>📄 Paper</button>
+            <button class="choice-btn" data-move="scissors" disabled>✂️ Scissors</button>
+        </div>
+
+        <!-- Round Display -->
+        <div class="round-display">
+            <div class="pick-box">
+                <span class="pick-label">You</span>
+                <span class="pick-value" id="myPick">—</span>
+            </div>
+            <span class="vs-badge">⚔️</span>
+            <div class="pick-box">
+                <span class="pick-label">Opponent</span>
+                <span class="pick-value hidden" id="oppPick">—</span>
+            </div>
+        </div>
+
+        <!-- Result Message -->
+        <div class="result-message" id="resultMessage">🔗 Connect to start playing</div>
+
+        <!-- Actions -->
+        <div class="action-area">
+            <button class="action-btn" id="resetBtn">🔄 New Game</button>
+            <button class="action-btn danger" id="disconnectBtn">🔌 Disconnect</button>
+        </div>
+        <div class="footer-note">⚡ Direct P2P • No server needed • Share offer link with your opponent</div>
     </div>
-    <span class="vs-badge">⚔️</span>
-    <div class="pick-box">
-      <span class="pick-label" id="p2Label">Player 2 / CPU</span>
-      <span class="pick-value" id="p2Pick">—</span>
-    </div>
-  </div>
 
-  <div class="result-message" id="resultMessage">👉 Choose your move</div>
+    <script>
+        class P2PRPS {
+            constructor() {
+                // DOM refs
+                this.statusEl = document.getElementById('connectionStatus');
+                this.localOffer = document.getElementById('localOffer');
+                this.remoteOffer = document.getElementById('remoteOffer');
+                this.createOfferBtn = document.getElementById('createOfferBtn');
+                this.connectBtn = document.getElementById('connectBtn');
+                this.myScore = document.getElementById('myScore');
+                this.oppScore = document.getElementById('oppScore');
+                this.tiesScore = document.getElementById('tiesScore');
+                this.myPick = document.getElementById('myPick');
+                this.oppPick = document.getElementById('oppPick');
+                this.resultMessage = document.getElementById('resultMessage');
+                this.turnIndicator = document.getElementById('turnIndicator');
+                this.choiceBtns = document.querySelectorAll('.choice-btn');
+                this.resetBtn = document.getElementById('resetBtn');
+                this.disconnectBtn = document.getElementById('disconnectBtn');
+                this.p2pSetup = document.getElementById('p2pSetup');
 
-  <div class="play-again-area">
-    <button class="action-btn" id="resetBtn">🔄 New Game</button>
-    <button class="action-btn" id="clearBtn">🗑️ Clear Round</button>
-  </div>
-  <div class="footer-note">⬆️ click your move · PvP: players take turns</div>
-</div>
+                // Game state
+                this.myScoreVal = 0;
+                this.oppScoreVal = 0;
+                this.tiesVal = 0;
+                this.myMove = null;
+                this.oppMove = null;
+                this.roundComplete = false;
+                this.isMyTurn = false;
+                this.connected = false;
 
-<script>
-  (function() {
-    // DOM refs
-    const p1ScoreSpan = document.getElementById('p1Score');
-    const p2ScoreSpan = document.getElementById('p2Score');
-    const tiesScoreSpan = document.getElementById('tiesScore');
-    const p1Pick = document.getElementById('p1Pick');
-    const p2Pick = document.getElementById('p2Pick');
-    const resultMessage = document.getElementById('resultMessage');
-    const turnIndicator = document.getElementById('turnIndicator');
-    const choiceBtns = document.querySelectorAll('.choice-btn');
-    const resetBtn = document.getElementById('resetBtn');
-    const clearBtn = document.getElementById('clearBtn');
-    const modeBtns = document.querySelectorAll('.mode-btn');
-    const p1Label = document.getElementById('p1Label');
-    const p2Label = document.getElementById('p2Label');
-    const p1ScoreLabel = document.getElementById('p1ScoreLabel');
-    const p2ScoreLabel = document.getElementById('p2ScoreLabel');
+                // WebRTC
+                this.peerConnection = null;
+                this.dataChannel = null;
+                this.isInitiator = false;
+                this.iceCandidates = [];
 
-    // State
-    let mode = 'pve'; // 'pve' or 'pvp'
-    let p1Score = 0, p2Score = 0, ties = 0;
-    let p1Move = null, p2Move = null;
-    let currentPlayer = 1; // 1 or 2
-    let roundComplete = false;
+                // Bind events
+                this.bindEvents();
+                this.updateUI();
+            }
 
-    // Move map
-    const moveMap = { rock: '🪨 Rock', paper: '📄 Paper', scissors: '✂️ Scissors' };
+            bindEvents() {
+                this.createOfferBtn.addEventListener('click', () => this.createOffer());
+                this.connectBtn.addEventListener('click', () => this.connectToPeer());
+                this.resetBtn.addEventListener('click', () => this.resetGame());
+                this.disconnectBtn.addEventListener('click', () => this.disconnect());
 
-    function updateUI() {
-      p1ScoreSpan.textContent = p1Score;
-      p2ScoreSpan.textContent = p2Score;
-      tiesScoreSpan.textContent = ties;
-      p1Pick.textContent = p1Move ? moveMap[p1Move] : '—';
-      p2Pick.textContent = p2Move ? moveMap[p2Move] : '—';
-      
-      // Update labels
-      if (mode === 'pve') {
-        p1Label.textContent = '👤 You';
-        p2Label.textContent = '🤖 Computer';
-        p1ScoreLabel.innerHTML = '🧑 You <span class="score-badge" id="p1Score">' + p1Score + '</span>';
-        p2ScoreLabel.innerHTML = '🤖 Computer <span class="score-badge" id="p2Score">' + p2Score + '</span>';
-      } else {
-        p1Label.textContent = '👤 Player 1';
-        p2Label.textContent = '👤 Player 2';
-        p1ScoreLabel.innerHTML = '👤 P1 <span class="score-badge" id="p1Score">' + p1Score + '</span>';
-        p2ScoreLabel.innerHTML = '👤 P2 <span class="score-badge" id="p2Score">' + p2Score + '</span>';
-      }
+                this.choiceBtns.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const move = btn.dataset.move;
+                        if (move && this.isMyTurn && this.connected) {
+                            this.makeMove(move);
+                        }
+                    });
+                });
 
-      // Update turn indicator
-      if (mode === 'pvp' && !roundComplete) {
-        turnIndicator.textContent = `🎯 Player ${currentPlayer}'s turn`;
-        turnIndicator.style.display = 'block';
-      } else if (mode === 'pvp' && roundComplete) {
-        turnIndicator.textContent = '✅ Round complete! Click Clear or New Game';
-        turnIndicator.style.display = 'block';
-      } else if (mode === 'pve') {
-        turnIndicator.textContent = '🎯 Click your move';
-        turnIndicator.style.display = 'block';
-      }
+                // Keyboard shortcuts
+                document.addEventListener('keydown', (e) => {
+                    const key = e.key;
+                    let move = null;
+                    if (key === '1' || key === '!') move = 'rock';
+                    else if (key === '2' || key === '@') move = 'paper';
+                    else if (key === '3' || key === '#') move = 'scissors';
+                    if (move && this.isMyTurn && this.connected) {
+                        e.preventDefault();
+                        this.makeMove(move);
+                    }
+                    if (key === 'r' || key === 'R') this.resetGame();
+                });
+            }
 
-      // Enable/disable buttons based on state
-      choiceBtns.forEach(btn => {
-        btn.disabled = (mode === 'pvp' && roundComplete);
-      });
-    }
+            // ----- WebRTC -----
+            async createOffer() {
+                try {
+                    this.setStatus('connecting', '⏳ Creating connection...');
+                    this.isInitiator = true;
 
-    function getResult(m1, m2) {
-      if (!m1 || !m2) return null;
-      if (m1 === m2) return 'tie';
-      if (
-        (m1 === 'rock' && m2 === 'scissors') ||
-        (m1 === 'scissors' && m2 === 'paper') ||
-        (m1 === 'paper' && m2 === 'rock')
-      ) {
-        return 'win';
-      }
-      return 'lose';
-    }
+                    this.peerConnection = new RTCPeerConnection({
+                        iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+                    });
 
-    function setResultMessage(result, m1, m2) {
-      resultMessage.classList.remove('win', 'lose', 'tie');
-      if (!m1 || !m2) {
-        resultMessage.textContent = '👉 Make your move';
-        return;
-      }
-      const names = mode === 'pve' ? ['You', 'Computer'] : ['Player 1', 'Player 2'];
-      const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
-      if (result === 'win') {
-        resultMessage.textContent = `🎉 ${names[0]} wins! ${cap(m1)} beats ${cap(m2)}.`;
-        resultMessage.classList.add('win');
-      } else if (result === 'lose') {
-        resultMessage.textContent = `😔 ${names[1]} wins! ${cap(m2)} beats ${cap(m1)}.`;
-        resultMessage.classList.add('lose');
-      } else if (result === 'tie') {
-        resultMessage.textContent = `🤝 It's a tie! Both chose ${cap(m1)}.`;
-        resultMessage.classList.add('tie');
-      }
-    }
+                    this.setupPeerConnection();
 
-    function completeRound() {
-      if (!p1Move || !p2Move) return;
-      const result = getResult(p1Move, p2Move);
-      if (result === 'win') p1Score++;
-      else if (result === 'lose') p2Score++;
-      else ties++;
-      setResultMessage(result, p1Move, p2Move);
-      roundComplete = true;
-      updateUI();
-    }
+                    const dataChannel = this.peerConnection.createDataChannel('rps-game');
+                    this.setupDataChannel(dataChannel);
 
-    function handlePVEMove(move) {
-      if (roundComplete) return;
-      const computerMove = ['rock', 'paper', 'scissors'][Math.floor(Math.random() * 3)];
-      p1Move = move;
-      p2Move = computerMove;
-      completeRound();
-    }
+                    const offer = await this.peerConnection.createOffer();
+                    await this.peerConnection.setLocalDescription(offer);
 
-    function handlePVPMove(move) {
-      if (roundComplete) return;
-      if (currentPlayer === 1) {
-        p1Move = move;
-        currentPlayer = 2;
-        p1Pick.textContent = moveMap[move];
-        turnIndicator.textContent = '🎯 Player 2\'s turn';
-        // Disable buttons briefly? No, just let P2 choose
-      } else {
-        p2Move = move;
-        p2Pick.textContent = moveMap[move];
-        completeRound();
-        currentPlayer = 1; // reset for next round
-      }
-      updateUI();
-    }
+                    // Wait for ICE gathering
+                    await new Promise((resolve) => {
+                        if (this.peerConnection.iceGatheringState === 'complete') {
+                            resolve();
+                        } else {
+                            this.peerConnection.onicegatheringstatechange = () => {
+                                if (this.peerConnection.iceGatheringState === 'complete') {
+                                    resolve();
+                                }
+                            };
+                        }
+                    });
 
-    function handleMove(move) {
-      if (mode === 'pve') {
-        handlePVEMove(move);
-      } else {
-        handlePVPMove(move);
-      }
-    }
+                    const offerString = JSON.stringify(this.peerConnection.localDescription);
+                    this.localOffer.value = offerString;
+                    this.localOffer.select();
+                    navigator.clipboard?.writeText(offerString).catch(() => {});
 
-    function resetGame() {
-      p1Score = 0;
-      p2Score = 0;
-      ties = 0;
-      p1Move = null;
-      p2Move = null;
-      roundComplete = false;
-      currentPlayer = 1;
-      resultMessage.classList.remove('win', 'lose', 'tie');
-      resultMessage.textContent = '👉 New game! Make your move';
-      updateUI();
-    }
+                    this.setStatus('connecting', '📤 Offer created! Share this with your opponent.');
+                    this.resultMessage.textContent = '📤 Share the offer with your opponent';
+                    this.resultMessage.className = 'result-message';
 
-    function clearRound() {
-      p1Move = null;
-      p2Move = null;
-      roundComplete = false;
-      if (mode === 'pvp') currentPlayer = 1;
-      resultMessage.classList.remove('win', 'lose', 'tie');
-      resultMessage.textContent = '👉 Choose your move';
-      updateUI();
-    }
+                } catch (error) {
+                    console.error('Create offer error:', error);
+                    this.setStatus('disconnected', '❌ Failed to create offer');
+                }
+            }
 
-    function setMode(newMode) {
-      mode = newMode;
-      modeBtns.forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.mode === mode);
-      });
-      resetGame();
-    }
+            async connectToPeer() {
+                try {
+                    const offerText = this.remoteOffer.value.trim();
+                    if (!offerText) {
+                        alert('Please paste your partner\'s offer');
+                        return;
+                    }
 
-    // Event listeners
-    choiceBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        const move = btn.dataset.move;
-        if (move) handleMove(move);
-      });
-    });
+                    this.setStatus('connecting', '⏳ Connecting to peer...');
+                    this.isInitiator = false;
 
-    resetBtn.addEventListener('click', resetGame);
-    clearBtn.addEventListener('click', clearRound);
+                    const offer = JSON.parse(offerText);
+                    this.peerConnection = new RTCPeerConnection({
+                        iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+                    });
 
-    modeBtns.forEach(btn => {
-      btn.addEventListener('click', () => setMode(btn.dataset.mode));
-    });
+                    this.setupPeerConnection();
 
-    // Keyboard shortcuts
-    document.addEventListener('keydown', (e) => {
-      const key = e.key;
-      let move = null;
-      if (key === '1' || key === '!') move = 'rock';
-      else if (key === '2' || key === '@') move = 'paper';
-      else if (key === '3' || key === '#') move = 'scissors';
-      if (move) {
-        e.preventDefault();
-        handleMove(move);
-      }
-      if (key === 'r' || key === 'R') resetGame();
-      if (key === 'c' || key === 'C') clearRound();
-    });
+                    this.peerConnection.ondatachannel = (event) => {
+                        const dataChannel = event.channel;
+                        this.setupDataChannel(dataChannel);
+                    };
 
-    // Init
-    setMode('pve');
-  })();
-</script>
+                    await this.peerConnection.setRemoteDescription(offer);
+                    const answer = await this.peerConnection.createAnswer();
+                    await this.peerConnection.setLocalDescription(answer);
+
+                    const answerString = JSON.stringify(answer);
+                    this.localOffer.value = answerString;
+                    this.localOffer.select();
+                    navigator.clipboard?.writeText(answerString).catch(() => {});
+
+                    this.setStatus('connecting', '📤 Answer created! Share this with your opponent.');
+
+                } catch (error) {
+                    console.error('Connection error:', error);
+                    this.setStatus('disconnected', '❌ Failed to connect');
+                }
+            }
+
+            setupPeerConnection() {
+                this.peerConnection.onicecandidate = (event) => {
+                    if (event.candidate) {
+                        // In a full implementation, you'd exchange ICE candidates too
+                        // For simplicity, we're using gathered offers
+                    }
+                };
+
+                this.peerConnection.onconnectionstatechange = () => {
+                    const state = this.peerConnection.connectionState;
+                    if (state === 'connected') {
+                        this.connected = true;
+                        this.setStatus('connected', '✅ Connected!');
+                        this.resultMessage.textContent = '🎯 Choose your move!';
+                        this.resultMessage.className = 'result-message';
+                        this.p2pSetup.classList.add('hidden');
+
+                        // Determine who goes first (initiator goes first)
+                        this.isMyTurn = this.isInitiator;
+                        this.updateUI();
+
+                        // Send initial handshake
+                        this.sendMessage({ type: 'handshake', initiator: this.isInitiator });
+
+                    } else if (state === 'disconnected' || state === 'failed' || state === 'closed') {
+                        this.connected = false;
+                        this.setStatus('disconnected', '🔴 Disconnected');
+                        this.resultMessage.textContent = '🔌 Connection lost';
+                        this.resultMessage.className = 'result-message';
+                    }
+                };
+            }
+
+            setupDataChannel(dataChannel) {
+                this.dataChannel = dataChannel;
+
+                dataChannel.onopen = () => {
+                    console.log('Data channel open');
+                };
+
+                dataChannel.onmessage = (event) => {
+                    try {
+                        const data = JSON.parse(event.data);
+                        this.handleMessage(data);
+                    } catch (e) {
+                        console.error('Parse error:', e);
+                    }
+                };
+
+                dataChannel.onclose = () => {
+                    console.log('Data channel closed');
+                };
+            }
+
+            sendMessage(data) {
+                if (this.dataChannel && this.dataChannel.readyState === 'open') {
+                    this.dataChannel.send(JSON.stringify(data));
+                }
+            }
+
+            handleMessage(data) {
+                console.log('Received:', data);
+
+                switch (data.type) {
+                    case 'handshake':
+                        // If both think they're initiator, one must yield
+                        if (data.initiator && this.isInitiator) {
+                            // Both initiators - one becomes follower
+                            this.isInitiator = false;
+                            this.isMyTurn = false;
+                        } else if (!data.initiator && !this.isInitiator) {
+                            this.isInitiator = true;
+                            this.isMyTurn = true;
+                        } else {
+                            // Normal: initiator goes first
+                            this.isMyTurn = this.isInitiator;
+                        }
+                        this.updateUI();
+                        break;
+
+                    case 'move':
+                        this.oppMove = data.move;
+                        this.oppPick.textContent = this.getMoveEmoji(data.move);
+                        this.oppPick.classList.remove('hidden');
+
+                        // Check if we have both moves
+                        if (this.myMove && this.oppMove) {
+                            this.resolveRound();
+                        } else {
+                            this.resultMessage.textContent = '⏳ Waiting for your move...';
+                            this.resultMessage.className = 'result-message waiting';
+                        }
+                        break;
+
+                    case 'reset':
+                        this.resetGame();
+                        break;
+
+                    case 'round_result':
+                        // Opponent's result (if we need to sync)
+                        break;
+                }
+            }
+
+            // ----- Game Logic -----
+            makeMove(move) {
+                if (!this.isMyTurn || this.roundComplete) return;
+
+                this.myMove = move;
+                this.myPick.textContent = this.getMoveEmoji(move);
+
+                // Send move to opponent
+                this.sendMessage({ type: 'move', move: move });
+
+                // Disable buttons
+                this.isMyTurn = false;
+                this.updateUI();
+
+                // Check if opponent already moved
+                if (this.oppMove) {
+                    this.resolveRound();
+                } else {
+                    this.resultMessage.textContent = '⏳ Waiting for opponent...';
+                    this.resultMessage.className = 'result-message waiting';
+                }
+            }
+
+            resolveRound() {
+                if (!this.myMove || !this.oppMove) return;
+
+                this.roundComplete = true;
+
+                const result = this.getResult(this.myMove, this.oppMove);
+                if (result === 'win') {
+                    this.myScoreVal++;
+                    this.resultMessage.textContent = `🎉 You win! ${this.getMoveEmoji(this.myMove)} beats ${this.getMoveEmoji(this.oppMove)}`;
+                    this.resultMessage.className = 'result-message win';
+                } else if (result === 'lose') {
+                    this.oppScoreVal++;
+                    this.resultMessage.textContent = `😔 You lose! ${this.getMoveEmoji(this.oppMove)} beats ${this.getMoveEmoji(this.myMove)}`;
+                    this.resultMessage.className = 'result-message lose';
+                } else {
+                    this.tiesVal++;
+                    this.resultMessage.textContent = `🤝 Tie! Both chose ${this.getMoveEmoji(this.myMove)}`;
+                    this.resultMessage.className = 'result-message tie';
+                }
+
+                // Switch turn for next round (alternate)
+                this.isMyTurn = !this.isMyTurn;
+                this.updateUI();
+                this.choiceBtns.forEach(btn => btn.disabled = !this.isMyTurn);
+            }
+
+            getResult(m1, m2) {
+                if (m1 === m2) return 'tie';
+                if (
+                    (m1 === 'rock' && m2 === 'scissors') ||
+                    (m1 === 'scissors' && m2 === 'paper') ||
+                    (m1 === 'paper' && m2 === 'rock')
+                ) {
+                    return 'win';
+                }
+                return 'lose';
+            }
+
+            getMoveEmoji(move) {
+                const map = {
+                    rock: '🪨 Rock',
+                    paper: '📄 Paper',
+                    scissors: '✂️ Scissors'
+                };
+                return map[move] || move;
+            }
+
+            resetGame() {
+                this.myScoreVal = 0;
+                this.oppScoreVal = 0;
+                this.tiesVal = 0;
+                this.myMove = null;
+                this.oppMove = null;
+                this.roundComplete = false;
+
+                if (this.connected) {
+                    this.sendMessage({ type: 'reset' });
+                }
+
+                this.updateUI();
+                this.resultMessage.textContent = '🔄 Game reset! Make your move.';
+                this.resultMessage.className = 'result-message';
+                this.oppPick.classList.add('hidden');
+                this.oppPick.textContent = '—';
+                this.myPick.textContent = '—';
+
+                this.choiceBtns.forEach(btn => {
+                    btn.disabled = !(this.isMyTurn && this.connected);
+                });
+            }
+
+            disconnect() {
+                if (this.dataChannel) {
+                    this.dataChannel.close();
+                }
+                if (this.peerConnection) {
+                    this.peerConnection.close();
+                }
+                this.peerConnection = null;
+                this.dataChannel = null;
+                this.connected = false;
+                this.isMyTurn = false;
+
+                this.p2pSetup.classList.remove('hidden');
+                this.setStatus('disconnected', '🔴 Disconnected');
+                this.resultMessage.textContent = '🔌 Disconnected';
+                this.resultMessage.className = 'result-message';
+                this.localOffer.value = '';
+                this.remoteOffer.value = '';
+                this.choiceBtns.forEach(btn => btn.disabled = true);
+                this.updateUI();
+            }
+
+            setStatus(type, message) {
+                this.statusEl.className = `connection-status ${type}`;
+                this.statusEl.textContent = message;
+            }
+
+            updateUI() {
+                this.myScore.textContent = this.myScoreVal;
+                this.oppScore.textContent = this.oppScoreVal;
+                this.tiesScore.textContent = this.tiesVal;
+
+                if (this.connected) {
+                    this.turnIndicator.textContent = this.isMyTurn ?
+                        '🎯 Your turn! Choose your move' :
+                        '⏳ Waiting for opponent...';
+                    this.choiceBtns.forEach(btn => {
+                        btn.disabled = !(this.isMyTurn && !this.roundComplete);
+                    });
+                } else {
+                    this.turnIndicator.textContent = '⏳ Waiting for connection...';
+                    this.choiceBtns.forEach(btn => btn.disabled = true);
+                }
+            }
+        }
+
+        // Initialize the game
+        const game = new P2PRPS();
+    </script>
 </body>
 </html>
