@@ -3,66 +3,74 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Rock · Paper · Scissors</title>
+  <title>Rock · Paper · Scissors · P2P</title>
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      background: linear-gradient(145deg, #0b1a2e 0%, #1a2f3f 100%);
+      background: linear-gradient(145deg, #0b1a2e, #1a2f3f);
       min-height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
-      font-family: 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif;
+      font-family: 'Segoe UI', system-ui, sans-serif;
       padding: 1.5rem;
-      margin: 0;
     }
-
     .game-container {
       background: rgba(22, 40, 56, 0.75);
       backdrop-filter: blur(6px);
       border-radius: 3.5rem;
       padding: 2.5rem 2.8rem;
-      max-width: 780px;
+      max-width: 850px;
       width: 100%;
-      box-shadow: 0 25px 50px -8px rgba(0, 0, 0, 0.8), inset 0 1px 2px rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.04);
-      transition: all 0.2s;
+      box-shadow: 0 25px 50px -8px rgba(0,0,0,0.8);
+      border: 1px solid rgba(255,255,255,0.04);
     }
-
     h1 {
       text-align: center;
+      color: #d6e6f5;
       font-weight: 500;
       letter-spacing: 3px;
       font-size: 2.5rem;
-      color: #d6e6f5;
-      text-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
       margin-bottom: 1.2rem;
-      word-break: break-word;
+      text-shadow: 0 4px 12px rgba(0,0,0,0.6);
     }
-    h1 span {
-      font-weight: 300;
-      color: #96b9d6;
+    .mode-toggle {
+      text-align: center;
+      margin-bottom: 1.5rem;
     }
-
+    .mode-btn {
+      background: #1b3343;
+      border: 2px solid #3f637a;
+      padding: 0.6rem 1.8rem;
+      border-radius: 60px;
+      color: #e3f0fa;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin: 0 0.5rem;
+    }
+    .mode-btn.active {
+      background: #2a5770;
+      border-color: #78aac9;
+      box-shadow: 0 0 20px rgba(120, 170, 201, 0.3);
+    }
+    .mode-btn:hover {
+      background: #264a5e;
+      border-color: #5d88a3;
+    }
     .scoreboard {
       display: flex;
       justify-content: space-between;
       background: #0e1f2b;
       padding: 0.9rem 2rem;
       border-radius: 60px;
-      margin-bottom: 2.5rem;
+      margin-bottom: 2rem;
       color: #cbdde9;
       border: 1px solid #2d4a5b;
-      box-shadow: inset 0 3px 8px rgba(0,0,0,0.5);
       font-weight: 500;
       font-size: 1.2rem;
     }
-
     .score-item {
       display: flex;
       align-items: center;
@@ -76,17 +84,24 @@
       font-weight: 600;
       min-width: 2.8rem;
       text-align: center;
-      box-shadow: inset 0 1px 4px #0b1a24;
     }
-
+    .player-indicator {
+      text-align: center;
+      font-size: 1.4rem;
+      color: #b3d6ee;
+      padding: 0.5rem;
+      background: #0e1f2b;
+      border-radius: 40px;
+      margin-bottom: 1.2rem;
+      border: 2px solid #2d4a5b;
+    }
     .choice-area {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
       gap: 1.2rem;
-      margin: 2rem 0 2.2rem;
+      margin: 1.5rem 0 2rem;
     }
-
     .choice-btn {
       background: #1b3343;
       border: none;
@@ -95,61 +110,51 @@
       font-size: 1.4rem;
       font-weight: 600;
       color: #e3f0fa;
-      box-shadow: 0 8px 0 #0a1924, 0 6px 16px rgba(0,0,0,0.4);
+      box-shadow: 0 8px 0 #0a1924;
       cursor: pointer;
       transition: all 0.08s ease-in;
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      letter-spacing: 0.5px;
       border: 1px solid #3f637a;
       flex: 0 1 auto;
     }
-
     .choice-btn:active {
       transform: translateY(6px);
       box-shadow: 0 2px 0 #0a1924;
     }
-
     .choice-btn:hover {
       background: #264a5e;
       border-color: #5d88a3;
       color: white;
     }
-
-    .choice-btn:focus-visible {
-      outline: 3px solid #8fcbff;
-      outline-offset: 4px;
+    .choice-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: translateY(4px);
+      box-shadow: 0 4px 0 #0a1924;
     }
-
     .round-display {
       background: #122b38;
       border-radius: 40px;
       padding: 1.6rem 1.8rem;
-      margin: 1.8rem 0;
+      margin: 1.5rem 0;
       display: flex;
       flex-wrap: wrap;
       justify-content: space-around;
       align-items: center;
       gap: 0.8rem 1.5rem;
       border: 1px solid #2d556b;
-      box-shadow: inset 0 3px 12px #07131b;
     }
-
     .pick-box {
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 0.3rem;
     }
-
     .pick-label {
       font-size: 0.8rem;
       text-transform: uppercase;
       letter-spacing: 1px;
       color: #8bb2cb;
     }
-
     .pick-value {
       background: #06212e;
       padding: 0.5rem 2rem;
@@ -160,301 +165,306 @@
       min-width: 110px;
       text-align: center;
       border: 1px solid #38728b;
-      box-shadow: inset 0 2px 6px #031017;
     }
-
     .vs-badge {
       font-size: 1.8rem;
       font-weight: 300;
       color: #709bb3;
       letter-spacing: 3px;
     }
-
     .result-message {
       text-align: center;
-      font-size: 2rem;
+      font-size: 1.8rem;
       font-weight: 600;
       padding: 0.7rem 1rem;
       border-radius: 60px;
       background: #0d2533;
       color: #d6ecfa;
       border-left: 6px solid #3d89b0;
-      margin: 1.8rem 0 1.2rem;
-      box-shadow: inset 0 2px 10px #04131e;
-      word-break: break-word;
+      margin: 1.5rem 0;
     }
-
-    .result-message.win {
-      border-left-color: #3ed68b;
-      color: #b0f0d0;
-    }
-    .result-message.lose {
-      border-left-color: #e4686b;
-      color: #fcc9ca;
-    }
-    .result-message.tie {
-      border-left-color: #d4b87a;
-      color: #f0e2b0;
-    }
-
+    .result-message.win { border-left-color: #3ed68b; color: #b0f0d0; }
+    .result-message.lose { border-left-color: #e4686b; color: #fcc9ca; }
+    .result-message.tie { border-left-color: #d4b87a; color: #f0e2b0; }
     .play-again-area {
       display: flex;
       justify-content: center;
-      margin-top: 1.8rem;
+      gap: 1rem;
+      margin-top: 1.5rem;
+      flex-wrap: wrap;
     }
-
-    #playAgainBtn {
+    .action-btn {
       background: #1e3f4f;
       border: 1px solid #4f7f99;
-      padding: 0.9rem 3.2rem;
+      padding: 0.9rem 2.5rem;
       border-radius: 60px;
-      font-size: 1.4rem;
+      font-size: 1.2rem;
       font-weight: 600;
       color: #e3f0fa;
       box-shadow: 0 6px 0 #0b202b;
       cursor: pointer;
       transition: all 0.08s ease-in;
-      letter-spacing: 1px;
-      width: 100%;
-      max-width: 280px;
     }
-
-    #playAgainBtn:active {
+    .action-btn:active {
       transform: translateY(6px);
       box-shadow: 0 1px 0 #0b202b;
     }
-    #playAgainBtn:hover {
+    .action-btn:hover {
       background: #2a5770;
       border-color: #78aac9;
-      color: white;
     }
-    #playAgainBtn:focus-visible {
-      outline: 3px solid #8fcbff;
-      outline-offset: 4px;
-    }
-
     .footer-note {
       text-align: center;
       color: #5b7e92;
       margin-top: 1.8rem;
       font-size: 0.9rem;
-      letter-spacing: 0.5px;
       border-top: 1px solid #264657;
       padding-top: 1.5rem;
     }
-
     @media (max-width: 550px) {
       .game-container { padding: 1.8rem 1.2rem; }
       h1 { font-size: 2rem; }
       .choice-btn { font-size: 1.2rem; padding: 0.7rem 1.2rem; }
       .pick-value { font-size: 1.4rem; min-width: 80px; }
-      .scoreboard { font-size: 1rem; flex-wrap: wrap; gap: 0.4rem; justify-content: center; }
     }
   </style>
 </head>
 <body>
-<div class="game-container" role="main" aria-label="Rock Paper Scissors game">
+<div class="game-container">
   <h1>✧ ROCK · PAPER · SCISSORS ✧</h1>
 
-  <!-- scoreboard -->
+  <div class="mode-toggle">
+    <button class="mode-btn active" data-mode="pve">🤖 vs Computer</button>
+    <button class="mode-btn" data-mode="pvp">👥 Player vs Player</button>
+  </div>
+
   <div class="scoreboard">
-    <div class="score-item">🧑 You <span class="score-badge" id="userScore">0</span></div>
-    <div class="score-item">🤖 Computer <span class="score-badge" id="computerScore">0</span></div>
+    <div class="score-item" id="p1ScoreLabel">👤 P1 <span class="score-badge" id="p1Score">0</span></div>
+    <div class="score-item" id="p2ScoreLabel">👤 P2 <span class="score-badge" id="p2Score">0</span></div>
     <div class="score-item">🏳️ Ties <span class="score-badge" id="tiesScore">0</span></div>
   </div>
 
-  <!-- choice buttons -->
-  <div class="choice-area">
+  <div class="player-indicator" id="turnIndicator">🎯 Player 1's turn</div>
+
+  <div class="choice-area" id="choiceArea">
     <button class="choice-btn" data-move="rock">🪨 Rock</button>
     <button class="choice-btn" data-move="paper">📄 Paper</button>
     <button class="choice-btn" data-move="scissors">✂️ Scissors</button>
   </div>
 
-  <!-- round display: user vs computer -->
   <div class="round-display">
     <div class="pick-box">
-      <span class="pick-label">You</span>
-      <span class="pick-value" id="userPickDisplay">—</span>
+      <span class="pick-label" id="p1Label">Player 1</span>
+      <span class="pick-value" id="p1Pick">—</span>
     </div>
     <span class="vs-badge">⚔️</span>
     <div class="pick-box">
-      <span class="pick-label">Computer</span>
-      <span class="pick-value" id="computerPickDisplay">—</span>
+      <span class="pick-label" id="p2Label">Player 2 / CPU</span>
+      <span class="pick-value" id="p2Pick">—</span>
     </div>
   </div>
 
-  <!-- result message -->
   <div class="result-message" id="resultMessage">👉 Choose your move</div>
 
-  <!-- play again -->
   <div class="play-again-area">
-    <button id="playAgainBtn">🔄 Play again</button>
+    <button class="action-btn" id="resetBtn">🔄 New Game</button>
+    <button class="action-btn" id="clearBtn">🗑️ Clear Round</button>
   </div>
-  <div class="footer-note">⬆️ click your move · scores persist</div>
+  <div class="footer-note">⬆️ click your move · PvP: players take turns</div>
 </div>
 
 <script>
   (function() {
-    // ----- DOM refs -----
-    const userScoreSpan = document.getElementById('userScore');
-    const computerScoreSpan = document.getElementById('computerScore');
+    // DOM refs
+    const p1ScoreSpan = document.getElementById('p1Score');
+    const p2ScoreSpan = document.getElementById('p2Score');
     const tiesScoreSpan = document.getElementById('tiesScore');
-    const userPickDisplay = document.getElementById('userPickDisplay');
-    const computerPickDisplay = document.getElementById('computerPickDisplay');
+    const p1Pick = document.getElementById('p1Pick');
+    const p2Pick = document.getElementById('p2Pick');
     const resultMessage = document.getElementById('resultMessage');
-
+    const turnIndicator = document.getElementById('turnIndicator');
     const choiceBtns = document.querySelectorAll('.choice-btn');
-    const playAgainBtn = document.getElementById('playAgainBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const modeBtns = document.querySelectorAll('.mode-btn');
+    const p1Label = document.getElementById('p1Label');
+    const p2Label = document.getElementById('p2Label');
+    const p1ScoreLabel = document.getElementById('p1ScoreLabel');
+    const p2ScoreLabel = document.getElementById('p2ScoreLabel');
 
-    // ----- state -----
-    let userScore = 0;
-    let computerScore = 0;
-    let ties = 0;
+    // State
+    let mode = 'pve'; // 'pve' or 'pvp'
+    let p1Score = 0, p2Score = 0, ties = 0;
+    let p1Move = null, p2Move = null;
+    let currentPlayer = 1; // 1 or 2
+    let roundComplete = false;
 
-    // last round picks (for display)
-    let lastUserMove = null;
-    let lastComputerMove = null;
+    // Move map
+    const moveMap = { rock: '🪨 Rock', paper: '📄 Paper', scissors: '✂️ Scissors' };
 
-    // ----- helper functions -----
-    function updateScoreUI() {
-      userScoreSpan.textContent = userScore;
-      computerScoreSpan.textContent = computerScore;
+    function updateUI() {
+      p1ScoreSpan.textContent = p1Score;
+      p2ScoreSpan.textContent = p2Score;
       tiesScoreSpan.textContent = ties;
+      p1Pick.textContent = p1Move ? moveMap[p1Move] : '—';
+      p2Pick.textContent = p2Move ? moveMap[p2Move] : '—';
+      
+      // Update labels
+      if (mode === 'pve') {
+        p1Label.textContent = '👤 You';
+        p2Label.textContent = '🤖 Computer';
+        p1ScoreLabel.innerHTML = '🧑 You <span class="score-badge" id="p1Score">' + p1Score + '</span>';
+        p2ScoreLabel.innerHTML = '🤖 Computer <span class="score-badge" id="p2Score">' + p2Score + '</span>';
+      } else {
+        p1Label.textContent = '👤 Player 1';
+        p2Label.textContent = '👤 Player 2';
+        p1ScoreLabel.innerHTML = '👤 P1 <span class="score-badge" id="p1Score">' + p1Score + '</span>';
+        p2ScoreLabel.innerHTML = '👤 P2 <span class="score-badge" id="p2Score">' + p2Score + '</span>';
+      }
+
+      // Update turn indicator
+      if (mode === 'pvp' && !roundComplete) {
+        turnIndicator.textContent = `🎯 Player ${currentPlayer}'s turn`;
+        turnIndicator.style.display = 'block';
+      } else if (mode === 'pvp' && roundComplete) {
+        turnIndicator.textContent = '✅ Round complete! Click Clear or New Game';
+        turnIndicator.style.display = 'block';
+      } else if (mode === 'pve') {
+        turnIndicator.textContent = '🎯 Click your move';
+        turnIndicator.style.display = 'block';
+      }
+
+      // Enable/disable buttons based on state
+      choiceBtns.forEach(btn => {
+        btn.disabled = (mode === 'pvp' && roundComplete);
+      });
     }
 
-    // update pick displays
-    function updatePickDisplay(userMove, computerMove) {
-      const moveMap = {
-        rock: '🪨 Rock',
-        paper: '📄 Paper',
-        scissors: '✂️ Scissors'
-      };
-      userPickDisplay.textContent = userMove ? moveMap[userMove] || userMove : '—';
-      computerPickDisplay.textContent = computerMove ? moveMap[computerMove] || computerMove : '—';
-    }
-
-    // core game logic: returns 'win', 'lose', 'tie'
-    function getRoundResult(user, computer) {
-      if (user === computer) return 'tie';
+    function getResult(m1, m2) {
+      if (!m1 || !m2) return null;
+      if (m1 === m2) return 'tie';
       if (
-        (user === 'rock' && computer === 'scissors') ||
-        (user === 'scissors' && computer === 'paper') ||
-        (user === 'paper' && computer === 'rock')
+        (m1 === 'rock' && m2 === 'scissors') ||
+        (m1 === 'scissors' && m2 === 'paper') ||
+        (m1 === 'paper' && m2 === 'rock')
       ) {
         return 'win';
       }
       return 'lose';
     }
 
-    // update result message with styling
-    function setResultMessage(result, userMove, computerMove) {
-      const messages = {
-        win: `🎉 You win! ${capitalize(userMove)} beats ${capitalize(computerMove)}.`,
-        lose: `😔 You lose! ${capitalize(computerMove)} beats ${capitalize(userMove)}.`,
-        tie: `🤝 It's a tie! Both chose ${capitalize(userMove)}.`
-      };
-
-      // remove previous classes
+    function setResultMessage(result, m1, m2) {
       resultMessage.classList.remove('win', 'lose', 'tie');
-
+      if (!m1 || !m2) {
+        resultMessage.textContent = '👉 Make your move';
+        return;
+      }
+      const names = mode === 'pve' ? ['You', 'Computer'] : ['Player 1', 'Player 2'];
+      const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
       if (result === 'win') {
-        resultMessage.textContent = messages.win;
+        resultMessage.textContent = `🎉 ${names[0]} wins! ${cap(m1)} beats ${cap(m2)}.`;
         resultMessage.classList.add('win');
       } else if (result === 'lose') {
-        resultMessage.textContent = messages.lose;
+        resultMessage.textContent = `😔 ${names[1]} wins! ${cap(m2)} beats ${cap(m1)}.`;
         resultMessage.classList.add('lose');
-      } else { // tie
-        resultMessage.textContent = messages.tie;
+      } else if (result === 'tie') {
+        resultMessage.textContent = `🤝 It's a tie! Both chose ${cap(m1)}.`;
         resultMessage.classList.add('tie');
       }
     }
 
-    function capitalize(str) {
-      return str.charAt(0).toUpperCase() + str.slice(1);
+    function completeRound() {
+      if (!p1Move || !p2Move) return;
+      const result = getResult(p1Move, p2Move);
+      if (result === 'win') p1Score++;
+      else if (result === 'lose') p2Score++;
+      else ties++;
+      setResultMessage(result, p1Move, p2Move);
+      roundComplete = true;
+      updateUI();
     }
 
-    // computer random move
-    function getComputerMove() {
-      const moves = ['rock', 'paper', 'scissors'];
-      const randomIndex = Math.floor(Math.random() * moves.length);
-      return moves[randomIndex];
+    function handlePVEMove(move) {
+      if (roundComplete) return;
+      const computerMove = ['rock', 'paper', 'scissors'][Math.floor(Math.random() * 3)];
+      p1Move = move;
+      p2Move = computerMove;
+      completeRound();
     }
 
-    // main play function
-    function playRound(userMove) {
-      const computerMove = getComputerMove();
-      const result = getRoundResult(userMove, computerMove);
-
-      // update scores
-      if (result === 'win') userScore += 1;
-      else if (result === 'lose') computerScore += 1;
-      else ties += 1;
-
-      // save last moves for display
-      lastUserMove = userMove;
-      lastComputerMove = computerMove;
-
-      // update UI
-      updatePickDisplay(userMove, computerMove);
-      setResultMessage(result, userMove, computerMove);
-      updateScoreUI();
-    }
-
-    // reset game scores & display (keep moves if any)
-    function resetScores() {
-      userScore = 0;
-      computerScore = 0;
-      ties = 0;
-      updateScoreUI();
-      // keep last picks visible, but result message changes
-      if (lastUserMove && lastComputerMove) {
-        updatePickDisplay(lastUserMove, lastComputerMove);
-        // we re-evaluate result to show correct message (since scores reset but result of last round remains)
-        const result = getRoundResult(lastUserMove, lastComputerMove);
-        setResultMessage(result, lastUserMove, lastComputerMove);
+    function handlePVPMove(move) {
+      if (roundComplete) return;
+      if (currentPlayer === 1) {
+        p1Move = move;
+        currentPlayer = 2;
+        p1Pick.textContent = moveMap[move];
+        turnIndicator.textContent = '🎯 Player 2\'s turn';
+        // Disable buttons briefly? No, just let P2 choose
       } else {
-        // if no moves yet, reset display
-        userPickDisplay.textContent = '—';
-        computerPickDisplay.textContent = '—';
-        resultMessage.textContent = '👉 Choose your move';
-        resultMessage.classList.remove('win', 'lose', 'tie');
+        p2Move = move;
+        p2Pick.textContent = moveMap[move];
+        completeRound();
+        currentPlayer = 1; // reset for next round
+      }
+      updateUI();
+    }
+
+    function handleMove(move) {
+      if (mode === 'pve') {
+        handlePVEMove(move);
+      } else {
+        handlePVPMove(move);
       }
     }
 
-    // reset entire game (scores + picks + message)
-    function fullReset() {
-      userScore = 0;
-      computerScore = 0;
+    function resetGame() {
+      p1Score = 0;
+      p2Score = 0;
       ties = 0;
-      lastUserMove = null;
-      lastComputerMove = null;
-      updateScoreUI();
-      userPickDisplay.textContent = '—';
-      computerPickDisplay.textContent = '—';
-      resultMessage.textContent = '👉 Choose your move';
+      p1Move = null;
+      p2Move = null;
+      roundComplete = false;
+      currentPlayer = 1;
       resultMessage.classList.remove('win', 'lose', 'tie');
+      resultMessage.textContent = '👉 New game! Make your move';
+      updateUI();
     }
 
-    // ----- event listeners -----
+    function clearRound() {
+      p1Move = null;
+      p2Move = null;
+      roundComplete = false;
+      if (mode === 'pvp') currentPlayer = 1;
+      resultMessage.classList.remove('win', 'lose', 'tie');
+      resultMessage.textContent = '👉 Choose your move';
+      updateUI();
+    }
+
+    function setMode(newMode) {
+      mode = newMode;
+      modeBtns.forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.mode === mode);
+      });
+      resetGame();
+    }
+
+    // Event listeners
     choiceBtns.forEach(btn => {
-      btn.addEventListener('click', function(e) {
-        const move = this.getAttribute('data-move');
-        // if no move (shouldn't happen) ignore
-        if (!move) return;
-        playRound(move);
+      btn.addEventListener('click', () => {
+        const move = btn.dataset.move;
+        if (move) handleMove(move);
       });
     });
 
-    // Play again button: reset scores but keep last round display? 
-    // per spec "Ask user if they want to play another round." 
-    // We reset scores and show initial message. But we keep the last move display? 
-    // Better to reset fully to avoid confusion: clear picks, scores, and message.
-    playAgainBtn.addEventListener('click', function() {
-      fullReset();
+    resetBtn.addEventListener('click', resetGame);
+    clearBtn.addEventListener('click', clearRound);
+
+    modeBtns.forEach(btn => {
+      btn.addEventListener('click', () => setMode(btn.dataset.mode));
     });
 
-    // optional: keyboard support (press 1,2,3 for rock,paper,scissors)
-    document.addEventListener('keydown', function(e) {
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
       const key = e.key;
       let move = null;
       if (key === '1' || key === '!') move = 'rock';
@@ -462,23 +472,14 @@
       else if (key === '3' || key === '#') move = 'scissors';
       if (move) {
         e.preventDefault();
-        playRound(move);
+        handleMove(move);
       }
-      // 'r' for reset (play again)
-      if (key === 'r' || key === 'R') {
-        e.preventDefault();
-        fullReset();
-      }
+      if (key === 'r' || key === 'R') resetGame();
+      if (key === 'c' || key === 'C') clearRound();
     });
 
-    // init UI
-    fullReset();
-
-    // small extra: add tooltip for keyboard shortcuts
-    const footer = document.querySelector('.footer-note');
-    if (footer) {
-      footer.textContent = 'Created By Bishwajit';
-    }
+    // Init
+    setMode('pve');
   })();
 </script>
 </body>
