@@ -1,815 +1,366 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>P2P Rock-Paper-Scissors</title>
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-        body {
-            background: linear-gradient(145deg, #0b1a2e, #1a2f3f);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            padding: 1.5rem;
-        }
-        .game-container {
-            background: rgba(22, 40, 56, 0.85);
-            backdrop-filter: blur(6px);
-            border-radius: 3.5rem;
-            padding: 2.5rem 2.8rem;
-            max-width: 900px;
-            width: 100%;
-            box-shadow: 0 25px 50px -8px rgba(0, 0, 0, 0.8);
-            border: 1px solid rgba(255, 255, 255, 0.04);
-        }
-        h1 {
-            text-align: center;
-            color: #d6e6f5;
-            font-weight: 500;
-            letter-spacing: 3px;
-            font-size: 2.5rem;
-            margin-bottom: 1.2rem;
-            text-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
-        }
-        .connection-status {
-            text-align: center;
-            padding: 0.8rem;
-            border-radius: 40px;
-            background: #0e1f2b;
-            color: #cbdde9;
-            border: 2px solid #2d4a5b;
-            margin-bottom: 1.5rem;
-            font-weight: 600;
-            font-size: 1.1rem;
-        }
-        .connection-status.connected {
-            border-color: #3ed68b;
-            color: #b0f0d0;
-        }
-        .connection-status.disconnected {
-            border-color: #e4686b;
-            color: #fcc9ca;
-        }
-        .connection-status.connecting {
-            border-color: #d4b87a;
-            color: #f0e2b0;
-        }
-        .p2p-setup {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1.5rem;
-            margin: 1.5rem 0;
-        }
-        .setup-box {
-            background: #0e1f2b;
-            border-radius: 30px;
-            padding: 1.5rem;
-            border: 1px solid #2d4a5b;
-        }
-        .setup-box h3 {
-            color: #b3d6ee;
-            margin-bottom: 1rem;
-            font-size: 1.1rem;
-        }
-        .setup-box textarea {
-            width: 100%;
-            height: 120px;
-            background: #06212e;
-            border: 1px solid #38728b;
-            border-radius: 16px;
-            color: #ddf0ff;
-            padding: 0.8rem;
-            font-size: 0.8rem;
-            resize: vertical;
-            font-family: monospace;
-        }
-        .setup-box textarea:focus {
-            outline: 2px solid #8fcbff;
-        }
-        .setup-box button {
-            background: #1b3343;
-            border: none;
-            padding: 0.7rem 1.5rem;
-            border-radius: 40px;
-            color: #e3f0fa;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 0.8rem;
-            border: 1px solid #3f637a;
-            transition: all 0.2s;
-            width: 100%;
-        }
-        .setup-box button:hover {
-            background: #264a5e;
-            border-color: #5d88a3;
-        }
-        .setup-box button:active {
-            transform: scale(0.97);
-        }
-        .scoreboard {
-            display: flex;
-            justify-content: space-between;
-            background: #0e1f2b;
-            padding: 0.9rem 2rem;
-            border-radius: 60px;
-            margin: 1.5rem 0;
-            color: #cbdde9;
-            border: 1px solid #2d4a5b;
-            font-weight: 500;
-            font-size: 1.2rem;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-        }
-        .score-item {
-            display: flex;
-            align-items: center;
-            gap: 0.6rem;
-        }
-        .score-badge {
-            background: #1d3a4b;
-            padding: 0.2rem 1rem;
-            border-radius: 40px;
-            color: #b3d6ee;
-            font-weight: 600;
-            min-width: 2.8rem;
-            text-align: center;
-        }
-        .player-indicator {
-            text-align: center;
-            font-size: 1.4rem;
-            color: #b3d6ee;
-            padding: 0.5rem;
-            background: #0e1f2b;
-            border-radius: 40px;
-            margin-bottom: 1.2rem;
-            border: 2px solid #2d4a5b;
-        }
-        .choice-area {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 1.2rem;
-            margin: 1.5rem 0 2rem;
-        }
-        .choice-btn {
-            background: #1b3343;
-            border: none;
-            padding: 0.9rem 1.8rem;
-            border-radius: 60px;
-            font-size: 1.4rem;
-            font-weight: 600;
-            color: #e3f0fa;
-            box-shadow: 0 8px 0 #0a1924;
-            cursor: pointer;
-            transition: all 0.08s ease-in;
-            border: 1px solid #3f637a;
-            flex: 0 1 auto;
-        }
-        .choice-btn:active {
-            transform: translateY(6px);
-            box-shadow: 0 2px 0 #0a1924;
-        }
-        .choice-btn:hover {
-            background: #264a5e;
-            border-color: #5d88a3;
-            color: white;
-        }
-        .choice-btn:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-            transform: translateY(4px);
-            box-shadow: 0 4px 0 #0a1924;
-        }
-        .choice-btn.waiting {
-            animation: pulse 1.5s infinite;
-        }
-        @keyframes pulse {
-            0%,
-            100% {
-                opacity: 0.6;
-            }
-            50% {
-                opacity: 1;
-            }
-        }
-        .round-display {
-            background: #122b38;
-            border-radius: 40px;
-            padding: 1.6rem 1.8rem;
-            margin: 1.5rem 0;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-around;
-            align-items: center;
-            gap: 0.8rem 1.5rem;
-            border: 1px solid #2d556b;
-        }
-        .pick-box {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.3rem;
-        }
-        .pick-label {
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #8bb2cb;
-        }
-        .pick-value {
-            background: #06212e;
-            padding: 0.5rem 2rem;
-            border-radius: 60px;
-            font-size: 1.8rem;
-            font-weight: 600;
-            color: #ddf0ff;
-            min-width: 110px;
-            text-align: center;
-            border: 1px solid #38728b;
-        }
-        .pick-value.hidden {
-            filter: blur(8px);
-            user-select: none;
-        }
-        .vs-badge {
-            font-size: 1.8rem;
-            font-weight: 300;
-            color: #709bb3;
-            letter-spacing: 3px;
-        }
-        .result-message {
-            text-align: center;
-            font-size: 1.8rem;
-            font-weight: 600;
-            padding: 0.7rem 1rem;
-            border-radius: 60px;
-            background: #0d2533;
-            color: #d6ecfa;
-            border-left: 6px solid #3d89b0;
-            margin: 1.5rem 0;
-            min-height: 4rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .result-message.win {
-            border-left-color: #3ed68b;
-            color: #b0f0d0;
-        }
-        .result-message.lose {
-            border-left-color: #e4686b;
-            color: #fcc9ca;
-        }
-        .result-message.tie {
-            border-left-color: #d4b87a;
-            color: #f0e2b0;
-        }
-        .result-message.waiting {
-            border-left-color: #d4b87a;
-            color: #f0e2b0;
-            animation: pulse 1.5s infinite;
-        }
-        .action-area {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            margin-top: 1.5rem;
-            flex-wrap: wrap;
-        }
-        .action-btn {
-            background: #1e3f4f;
-            border: 1px solid #4f7f99;
-            padding: 0.9rem 2.5rem;
-            border-radius: 60px;
-            font-size: 1.2rem;
-            font-weight: 600;
-            color: #e3f0fa;
-            box-shadow: 0 6px 0 #0b202b;
-            cursor: pointer;
-            transition: all 0.08s ease-in;
-        }
-        .action-btn:active {
-            transform: translateY(6px);
-            box-shadow: 0 1px 0 #0b202b;
-        }
-        .action-btn:hover {
-            background: #2a5770;
-            border-color: #78aac9;
-        }
-        .action-btn.danger {
-            border-color: #e4686b;
-            color: #fcc9ca;
-        }
-        .action-btn.danger:hover {
-            background: #5a2a2a;
-        }
-        .footer-note {
-            text-align: center;
-            color: #5b7e92;
-            margin-top: 1.8rem;
-            font-size: 0.9rem;
-            border-top: 1px solid #264657;
-            padding-top: 1.5rem;
-        }
-        .hidden {
-            display: none !important;
-        }
-        @media (max-width: 700px) {
-            .p2p-setup {
-                grid-template-columns: 1fr;
-            }
-            .game-container {
-                padding: 1.5rem 1.2rem;
-            }
-            h1 {
-                font-size: 2rem;
-            }
-            .choice-btn {
-                font-size: 1.2rem;
-                padding: 0.7rem 1.2rem;
-            }
-            .pick-value {
-                font-size: 1.4rem;
-                min-width: 80px;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="game-container">
-        <h1>🌐 P2P Rock·Paper·Scissors</h1>
-
-        <!-- Connection Status -->
-        <div class="connection-status disconnected" id="connectionStatus">
-            🔴 Disconnected - Set up peer connection
-        </div>
-
-        <!-- P2P Setup -->
-        <div class="p2p-setup" id="p2pSetup">
-            <div class="setup-box">
-                <h3>📤 Your Offer (Share this)</h3>
-                <textarea id="localOffer" readonly placeholder="Create offer first..."></textarea>
-                <button id="createOfferBtn">🔗 Create Offer</button>
-            </div>
-            <div class="setup-box">
-                <h3>📥 Paste Partner's Offer</h3>
-                <textarea id="remoteOffer" placeholder="Paste offer from partner..."></textarea>
-                <button id="connectBtn">🔗 Connect</button>
-            </div>
-        </div>
-
-        <!-- Scoreboard -->
-        <div class="scoreboard">
-            <div class="score-item">👤 You <span class="score-badge" id="myScore">0</span></div>
-            <div class="score-item">👤 Opponent <span class="score-badge" id="oppScore">0</span></div>
-            <div class="score-item">🏳️ Ties <span class="score-badge" id="tiesScore">0</span></div>
-        </div>
-
-        <!-- Player Indicator -->
-        <div class="player-indicator" id="turnIndicator">⏳ Waiting for opponent...</div>
-
-        <!-- Choice Buttons -->
-        <div class="choice-area" id="choiceArea">
-            <button class="choice-btn" data-move="rock" disabled>🪨 Rock</button>
-            <button class="choice-btn" data-move="paper" disabled>📄 Paper</button>
-            <button class="choice-btn" data-move="scissors" disabled>✂️ Scissors</button>
-        </div>
-
-        <!-- Round Display -->
-        <div class="round-display">
-            <div class="pick-box">
-                <span class="pick-label">You</span>
-                <span class="pick-value" id="myPick">—</span>
-            </div>
-            <span class="vs-badge">⚔️</span>
-            <div class="pick-box">
-                <span class="pick-label">Opponent</span>
-                <span class="pick-value hidden" id="oppPick">—</span>
-            </div>
-        </div>
-
-        <!-- Result Message -->
-        <div class="result-message" id="resultMessage">🔗 Connect to start playing</div>
-
-        <!-- Actions -->
-        <div class="action-area">
-            <button class="action-btn" id="resetBtn">🔄 New Game</button>
-            <button class="action-btn danger" id="disconnectBtn">🔌 Disconnect</button>
-        </div>
-        <div class="footer-note">⚡ Direct P2P • No server needed • Share offer link with your opponent</div>
-    </div>
-
-    <script>
-        class P2PRPS {
-            constructor() {
-                // DOM refs
-                this.statusEl = document.getElementById('connectionStatus');
-                this.localOffer = document.getElementById('localOffer');
-                this.remoteOffer = document.getElementById('remoteOffer');
-                this.createOfferBtn = document.getElementById('createOfferBtn');
-                this.connectBtn = document.getElementById('connectBtn');
-                this.myScore = document.getElementById('myScore');
-                this.oppScore = document.getElementById('oppScore');
-                this.tiesScore = document.getElementById('tiesScore');
-                this.myPick = document.getElementById('myPick');
-                this.oppPick = document.getElementById('oppPick');
-                this.resultMessage = document.getElementById('resultMessage');
-                this.turnIndicator = document.getElementById('turnIndicator');
-                this.choiceBtns = document.querySelectorAll('.choice-btn');
-                this.resetBtn = document.getElementById('resetBtn');
-                this.disconnectBtn = document.getElementById('disconnectBtn');
-                this.p2pSetup = document.getElementById('p2pSetup');
-
-                // Game state
-                this.myScoreVal = 0;
-                this.oppScoreVal = 0;
-                this.tiesVal = 0;
-                this.myMove = null;
-                this.oppMove = null;
-                this.roundComplete = false;
-                this.isMyTurn = false;
-                this.connected = false;
-
-                // WebRTC
-                this.peerConnection = null;
-                this.dataChannel = null;
-                this.isInitiator = false;
-                this.iceCandidates = [];
-
-                // Bind events
-                this.bindEvents();
-                this.updateUI();
-            }
-
-            bindEvents() {
-                this.createOfferBtn.addEventListener('click', () => this.createOffer());
-                this.connectBtn.addEventListener('click', () => this.connectToPeer());
-                this.resetBtn.addEventListener('click', () => this.resetGame());
-                this.disconnectBtn.addEventListener('click', () => this.disconnect());
-
-                this.choiceBtns.forEach(btn => {
-                    btn.addEventListener('click', () => {
-                        const move = btn.dataset.move;
-                        if (move && this.isMyTurn && this.connected) {
-                            this.makeMove(move);
-                        }
-                    });
-                });
-
-                // Keyboard shortcuts
-                document.addEventListener('keydown', (e) => {
-                    const key = e.key;
-                    let move = null;
-                    if (key === '1' || key === '!') move = 'rock';
-                    else if (key === '2' || key === '@') move = 'paper';
-                    else if (key === '3' || key === '#') move = 'scissors';
-                    if (move && this.isMyTurn && this.connected) {
-                        e.preventDefault();
-                        this.makeMove(move);
-                    }
-                    if (key === 'r' || key === 'R') this.resetGame();
-                });
-            }
-
-            // ----- WebRTC -----
-            async createOffer() {
-                try {
-                    this.setStatus('connecting', '⏳ Creating connection...');
-                    this.isInitiator = true;
-
-                    this.peerConnection = new RTCPeerConnection({
-                        iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
-                    });
-
-                    this.setupPeerConnection();
-
-                    const dataChannel = this.peerConnection.createDataChannel('rps-game');
-                    this.setupDataChannel(dataChannel);
-
-                    const offer = await this.peerConnection.createOffer();
-                    await this.peerConnection.setLocalDescription(offer);
-
-                    // Wait for ICE gathering
-                    await new Promise((resolve) => {
-                        if (this.peerConnection.iceGatheringState === 'complete') {
-                            resolve();
-                        } else {
-                            this.peerConnection.onicegatheringstatechange = () => {
-                                if (this.peerConnection.iceGatheringState === 'complete') {
-                                    resolve();
-                                }
-                            };
-                        }
-                    });
-
-                    const offerString = JSON.stringify(this.peerConnection.localDescription);
-                    this.localOffer.value = offerString;
-                    this.localOffer.select();
-                    navigator.clipboard?.writeText(offerString).catch(() => {});
-
-                    this.setStatus('connecting', '📤 Offer created! Share this with your opponent.');
-                    this.resultMessage.textContent = '📤 Share the offer with your opponent';
-                    this.resultMessage.className = 'result-message';
-
-                } catch (error) {
-                    console.error('Create offer error:', error);
-                    this.setStatus('disconnected', '❌ Failed to create offer');
-                }
-            }
-
-            async connectToPeer() {
-                try {
-                    const offerText = this.remoteOffer.value.trim();
-                    if (!offerText) {
-                        alert('Please paste your partner\'s offer');
-                        return;
-                    }
-
-                    this.setStatus('connecting', '⏳ Connecting to peer...');
-                    this.isInitiator = false;
-
-                    const offer = JSON.parse(offerText);
-                    this.peerConnection = new RTCPeerConnection({
-                        iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
-                    });
-
-                    this.setupPeerConnection();
-
-                    this.peerConnection.ondatachannel = (event) => {
-                        const dataChannel = event.channel;
-                        this.setupDataChannel(dataChannel);
-                    };
-
-                    await this.peerConnection.setRemoteDescription(offer);
-                    const answer = await this.peerConnection.createAnswer();
-                    await this.peerConnection.setLocalDescription(answer);
-
-                    const answerString = JSON.stringify(answer);
-                    this.localOffer.value = answerString;
-                    this.localOffer.select();
-                    navigator.clipboard?.writeText(answerString).catch(() => {});
-
-                    this.setStatus('connecting', '📤 Answer created! Share this with your opponent.');
-
-                } catch (error) {
-                    console.error('Connection error:', error);
-                    this.setStatus('disconnected', '❌ Failed to connect');
-                }
-            }
-
-            setupPeerConnection() {
-                this.peerConnection.onicecandidate = (event) => {
-                    if (event.candidate) {
-                        // In a full implementation, you'd exchange ICE candidates too
-                        // For simplicity, we're using gathered offers
-                    }
-                };
-
-                this.peerConnection.onconnectionstatechange = () => {
-                    const state = this.peerConnection.connectionState;
-                    if (state === 'connected') {
-                        this.connected = true;
-                        this.setStatus('connected', '✅ Connected!');
-                        this.resultMessage.textContent = '🎯 Choose your move!';
-                        this.resultMessage.className = 'result-message';
-                        this.p2pSetup.classList.add('hidden');
-
-                        // Determine who goes first (initiator goes first)
-                        this.isMyTurn = this.isInitiator;
-                        this.updateUI();
-
-                        // Send initial handshake
-                        this.sendMessage({ type: 'handshake', initiator: this.isInitiator });
-
-                    } else if (state === 'disconnected' || state === 'failed' || state === 'closed') {
-                        this.connected = false;
-                        this.setStatus('disconnected', '🔴 Disconnected');
-                        this.resultMessage.textContent = '🔌 Connection lost';
-                        this.resultMessage.className = 'result-message';
-                    }
-                };
-            }
-
-            setupDataChannel(dataChannel) {
-                this.dataChannel = dataChannel;
-
-                dataChannel.onopen = () => {
-                    console.log('Data channel open');
-                };
-
-                dataChannel.onmessage = (event) => {
-                    try {
-                        const data = JSON.parse(event.data);
-                        this.handleMessage(data);
-                    } catch (e) {
-                        console.error('Parse error:', e);
-                    }
-                };
-
-                dataChannel.onclose = () => {
-                    console.log('Data channel closed');
-                };
-            }
-
-            sendMessage(data) {
-                if (this.dataChannel && this.dataChannel.readyState === 'open') {
-                    this.dataChannel.send(JSON.stringify(data));
-                }
-            }
-
-            handleMessage(data) {
-                console.log('Received:', data);
-
-                switch (data.type) {
-                    case 'handshake':
-                        // If both think they're initiator, one must yield
-                        if (data.initiator && this.isInitiator) {
-                            // Both initiators - one becomes follower
-                            this.isInitiator = false;
-                            this.isMyTurn = false;
-                        } else if (!data.initiator && !this.isInitiator) {
-                            this.isInitiator = true;
-                            this.isMyTurn = true;
-                        } else {
-                            // Normal: initiator goes first
-                            this.isMyTurn = this.isInitiator;
-                        }
-                        this.updateUI();
-                        break;
-
-                    case 'move':
-                        this.oppMove = data.move;
-                        this.oppPick.textContent = this.getMoveEmoji(data.move);
-                        this.oppPick.classList.remove('hidden');
-
-                        // Check if we have both moves
-                        if (this.myMove && this.oppMove) {
-                            this.resolveRound();
-                        } else {
-                            this.resultMessage.textContent = '⏳ Waiting for your move...';
-                            this.resultMessage.className = 'result-message waiting';
-                        }
-                        break;
-
-                    case 'reset':
-                        this.resetGame();
-                        break;
-
-                    case 'round_result':
-                        // Opponent's result (if we need to sync)
-                        break;
-                }
-            }
-
-            // ----- Game Logic -----
-            makeMove(move) {
-                if (!this.isMyTurn || this.roundComplete) return;
-
-                this.myMove = move;
-                this.myPick.textContent = this.getMoveEmoji(move);
-
-                // Send move to opponent
-                this.sendMessage({ type: 'move', move: move });
-
-                // Disable buttons
-                this.isMyTurn = false;
-                this.updateUI();
-
-                // Check if opponent already moved
-                if (this.oppMove) {
-                    this.resolveRound();
-                } else {
-                    this.resultMessage.textContent = '⏳ Waiting for opponent...';
-                    this.resultMessage.className = 'result-message waiting';
-                }
-            }
-
-            resolveRound() {
-                if (!this.myMove || !this.oppMove) return;
-
-                this.roundComplete = true;
-
-                const result = this.getResult(this.myMove, this.oppMove);
-                if (result === 'win') {
-                    this.myScoreVal++;
-                    this.resultMessage.textContent = `🎉 You win! ${this.getMoveEmoji(this.myMove)} beats ${this.getMoveEmoji(this.oppMove)}`;
-                    this.resultMessage.className = 'result-message win';
-                } else if (result === 'lose') {
-                    this.oppScoreVal++;
-                    this.resultMessage.textContent = `😔 You lose! ${this.getMoveEmoji(this.oppMove)} beats ${this.getMoveEmoji(this.myMove)}`;
-                    this.resultMessage.className = 'result-message lose';
-                } else {
-                    this.tiesVal++;
-                    this.resultMessage.textContent = `🤝 Tie! Both chose ${this.getMoveEmoji(this.myMove)}`;
-                    this.resultMessage.className = 'result-message tie';
-                }
-
-                // Switch turn for next round (alternate)
-                this.isMyTurn = !this.isMyTurn;
-                this.updateUI();
-                this.choiceBtns.forEach(btn => btn.disabled = !this.isMyTurn);
-            }
-
-            getResult(m1, m2) {
-                if (m1 === m2) return 'tie';
-                if (
-                    (m1 === 'rock' && m2 === 'scissors') ||
-                    (m1 === 'scissors' && m2 === 'paper') ||
-                    (m1 === 'paper' && m2 === 'rock')
-                ) {
-                    return 'win';
-                }
-                return 'lose';
-            }
-
-            getMoveEmoji(move) {
-                const map = {
-                    rock: '🪨 Rock',
-                    paper: '📄 Paper',
-                    scissors: '✂️ Scissors'
-                };
-                return map[move] || move;
-            }
-
-            resetGame() {
-                this.myScoreVal = 0;
-                this.oppScoreVal = 0;
-                this.tiesVal = 0;
-                this.myMove = null;
-                this.oppMove = null;
-                this.roundComplete = false;
-
-                if (this.connected) {
-                    this.sendMessage({ type: 'reset' });
-                }
-
-                this.updateUI();
-                this.resultMessage.textContent = '🔄 Game reset! Make your move.';
-                this.resultMessage.className = 'result-message';
-                this.oppPick.classList.add('hidden');
-                this.oppPick.textContent = '—';
-                this.myPick.textContent = '—';
-
-                this.choiceBtns.forEach(btn => {
-                    btn.disabled = !(this.isMyTurn && this.connected);
-                });
-            }
-
-            disconnect() {
-                if (this.dataChannel) {
-                    this.dataChannel.close();
-                }
-                if (this.peerConnection) {
-                    this.peerConnection.close();
-                }
-                this.peerConnection = null;
-                this.dataChannel = null;
-                this.connected = false;
-                this.isMyTurn = false;
-
-                this.p2pSetup.classList.remove('hidden');
-                this.setStatus('disconnected', '🔴 Disconnected');
-                this.resultMessage.textContent = '🔌 Disconnected';
-                this.resultMessage.className = 'result-message';
-                this.localOffer.value = '';
-                this.remoteOffer.value = '';
-                this.choiceBtns.forEach(btn => btn.disabled = true);
-                this.updateUI();
-            }
-
-            setStatus(type, message) {
-                this.statusEl.className = `connection-status ${type}`;
-                this.statusEl.textContent = message;
-            }
-
-            updateUI() {
-                this.myScore.textContent = this.myScoreVal;
-                this.oppScore.textContent = this.oppScoreVal;
-                this.tiesScore.textContent = this.tiesVal;
-
-                if (this.connected) {
-                    this.turnIndicator.textContent = this.isMyTurn ?
-                        '🎯 Your turn! Choose your move' :
-                        '⏳ Waiting for opponent...';
-                    this.choiceBtns.forEach(btn => {
-                        btn.disabled = !(this.isMyTurn && !this.roundComplete);
-                    });
-                } else {
-                    this.turnIndicator.textContent = '⏳ Waiting for connection...';
-                    this.choiceBtns.forEach(btn => btn.disabled = true);
-                }
-            }
+"""
+P2P Rock-Paper-Scissors Game - Pure Python
+Run this script on both devices. One acts as server, other as client.
+"""
+
+import socket
+import threading
+import random
+import time
+import sys
+import json
+from datetime import datetime
+
+class RPSP2P:
+    def __init__(self):
+        self.host = self.get_local_ip()
+        self.port = 12345
+        self.socket = None
+        self.connection = None
+        self.connected = False
+        self.is_server = False
+        self.opponent_address = None
+        
+        # Game state
+        self.my_score = 0
+        self.opponent_score = 0
+        self.ties = 0
+        self.my_move = None
+        self.opponent_move = None
+        self.round_complete = False
+        self.my_turn = False
+        self.game_over = False
+        
+        # Colors for terminal
+        self.GREEN = '\033[92m'
+        self.RED = '\033[91m'
+        self.YELLOW = '\033[93m'
+        self.BLUE = '\033[94m'
+        self.CYAN = '\033[96m'
+        self.MAGENTA = '\033[95m'
+        self.RESET = '\033[0m'
+        self.BOLD = '\033[1m'
+        
+        self.move_emojis = {
+            'rock': '🪨',
+            'paper': '📄',
+            'scissors': '✂️'
         }
 
-        // Initialize the game
-        const game = new P2PRPS();
-    </script>
-</body>
-</html>
+    def get_local_ip(self):
+        """Get local IP address"""
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.connect(('8.8.8.8', 80))
+            ip = s.getsockname()[0]
+            s.close()
+            return ip
+        except:
+            return '127.0.0.1'
+
+    def clear_screen(self):
+        """Clear terminal screen"""
+        print('\033[2J\033[H', end='')
+
+    def print_header(self):
+        """Print game header"""
+        self.clear_screen()
+        print(f"{self.CYAN}{'='*60}{self.RESET}")
+        print(f"{self.BOLD}{self.MAGENTA}🌐 P2P ROCK-PAPER-SCISSORS 🌐{self.RESET}")
+        print(f"{self.CYAN}{'='*60}{self.RESET}")
+        print(f"{self.BLUE}📡 Local IP: {self.host}:{self.port}{self.RESET}")
+        if self.connected and self.opponent_address:
+            print(f"{self.BLUE}👥 Connected to: {self.opponent_address}{self.RESET}")
+            print(f"{self.BOLD}{self.GREEN}✅ CONNECTED{self.RESET}" if self.connected else f"{self.RED}❌ DISCONNECTED{self.RESET}")
+        print(f"{self.CYAN}{'-'*60}{self.RESET}")
+
+    def print_scoreboard(self):
+        """Display current scores"""
+        print(f"\n{self.BOLD}{'SCOREBOARD':^60}{self.RESET}")
+        print(f"{self.CYAN}{'-'*60}{self.RESET}")
+        print(f"{self.GREEN}🧑 You: {self.my_score}{self.RESET}")
+        print(f"{self.RED}🤖 Opponent: {self.opponent_score}{self.RESET}")
+        print(f"{self.YELLOW}🤝 Ties: {self.ties}{self.RESET}")
+        print(f"{self.CYAN}{'-'*60}{self.RESET}")
+
+    def print_moves(self):
+        """Display current round moves"""
+        print(f"\n{self.BOLD}{'ROUND MOVES':^60}{self.RESET}")
+        print(f"{self.CYAN}{'-'*60}{self.RESET}")
+        
+        your_move = self.move_emojis.get(self.my_move, '❓') + ' ' + (self.my_move or '?')
+        opp_move = self.move_emojis.get(self.opponent_move, '❓') + ' ' + (self.opponent_move or '?')
+        
+        if self.my_move and self.opponent_move:
+            print(f"{self.GREEN}🧑 You: {your_move}{self.RESET}")
+            print(f"{self.RED}🤖 Opponent: {opp_move}{self.RESET}")
+        else:
+            print(f"{self.GREEN}🧑 You: {your_move}{self.RESET}")
+            if self.my_move and not self.opponent_move:
+                print(f"{self.YELLOW}⏳ Waiting for opponent...{self.RESET}")
+            else:
+                print(f"{self.RED}🤖 Opponent: {opp_move}{self.RESET}")
+
+    def print_result(self, result):
+        """Display round result"""
+        print(f"\n{self.BOLD}{'RESULT':^60}{self.RESET}")
+        print(f"{self.CYAN}{'-'*60}{self.RESET}")
+        
+        if result == 'win':
+            print(f"{self.GREEN}🎉 YOU WIN! {self.move_emojis[self.my_move]} beats {self.move_emojis[self.opponent_move]}{self.RESET}")
+        elif result == 'lose':
+            print(f"{self.RED}😔 YOU LOSE! {self.move_emojis[self.opponent_move]} beats {self.move_emojis[self.my_move]}{self.RESET}")
+        else:
+            print(f"{self.YELLOW}🤝 IT'S A TIE! Both chose {self.move_emojis[self.my_move]}{self.RESET}")
+
+    def start_server(self):
+        """Start as server (wait for connection)"""
+        try:
+            self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            self.socket.bind((self.host, self.port))
+            self.socket.listen(1)
+            self.is_server = True
+            
+            self.print_header()
+            print(f"{self.YELLOW}📡 Waiting for connection on {self.host}:{self.port}...{self.RESET}")
+            print(f"{self.YELLOW}💡 Tell your opponent to connect to: {self.host}{self.RESET}")
+            print(f"{self.CYAN}{'-'*60}{self.RESET}")
+            
+            self.connection, addr = self.socket.accept()
+            self.opponent_address = f"{addr[0]}:{addr[1]}"
+            self.connected = True
+            self.my_turn = True  # Server goes first
+            
+            print(f"{self.GREEN}✅ Connected to {self.opponent_address}!{self.RESET}")
+            print(f"{self.GREEN}🎯 You go first!{self.RESET}")
+            
+            # Start game loop
+            self.game_loop()
+            
+        except Exception as e:
+            print(f"{self.RED}❌ Server error: {e}{self.RESET}")
+            input("\nPress Enter to exit...")
+
+    def connect_to_server(self, server_ip):
+        """Connect to a server"""
+        try:
+            self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.socket.connect((server_ip, self.port))
+            self.connection = self.socket
+            self.connected = True
+            self.is_server = False
+            self.opponent_address = f"{server_ip}:{self.port}"
+            self.my_turn = False  # Client waits for server
+            
+            print(f"{self.GREEN}✅ Connected to {self.opponent_address}!{self.RESET}")
+            print(f"{self.YELLOW}⏳ Waiting for opponent to start...{self.RESET}")
+            
+            # Start game loop
+            self.game_loop()
+            
+        except Exception as e:
+            print(f"{self.RED}❌ Connection error: {e}{self.RESET}")
+            input("\nPress Enter to exit...")
+
+    def send_message(self, message_type, data=None):
+        """Send a message to opponent"""
+        try:
+            msg = json.dumps({'type': message_type, 'data': data})
+            self.connection.send((msg + '\n').encode())
+            return True
+        except:
+            return False
+
+    def receive_message(self):
+        """Receive a message from opponent"""
+        try:
+            data = self.connection.recv(1024).decode()
+            if data:
+                return json.loads(data.strip())
+        except:
+            pass
+        return None
+
+    def game_loop(self):
+        """Main game loop with threading for receiving"""
+        # Start receiving thread
+        receive_thread = threading.Thread(target=self.receive_handler, daemon=True)
+        receive_thread.start()
+        
+        # Game loop
+        while self.connected and not self.game_over:
+            self.print_header()
+            self.print_scoreboard()
+            self.print_moves()
+            
+            if self.round_complete:
+                # Show result and wait for next round
+                print(f"{self.CYAN}{'-'*60}{self.RESET}")
+                print(f"{self.YELLOW}📝 Press Enter to continue to next round...{self.RESET}")
+                input()
+                self.reset_round()
+                continue
+            
+            if self.my_turn and not self.round_complete:
+                print(f"\n{self.GREEN}🎯 Your turn! Choose your move:{self.RESET}")
+                print(f"{self.CYAN}{'─'*60}{self.RESET}")
+                print(f"{self.BOLD}  1. Rock     🪨")
+                print(f"  2. Paper    📄")
+                print(f"  3. Scissors ✂️")
+                print(f"  4. Quit     🚪")
+                print(f"{self.CYAN}{'─'*60}{self.RESET}")
+                
+                choice = input(f"{self.BOLD}👉 Enter your choice (1-4): {self.RESET}").strip()
+                
+                if choice == '4':
+                    self.quit_game()
+                    break
+                
+                move_map = {'1': 'rock', '2': 'paper', '3': 'scissors'}
+                if choice in move_map:
+                    self.my_move = move_map[choice]
+                    # Send move to opponent
+                    if self.send_message('move', self.my_move):
+                        self.my_turn = False
+                        print(f"{self.BLUE}📤 Move sent! Waiting for opponent...{self.RESET}")
+                        time.sleep(0.5)
+                    else:
+                        print(f"{self.RED}❌ Failed to send move{self.RESET}")
+                else:
+                    print(f"{self.RED}❌ Invalid choice! Press Enter...{self.RESET}")
+                    input()
+            else:
+                # Waiting for opponent
+                print(f"\n{self.YELLOW}⏳ Waiting for opponent's move...{self.RESET}")
+                if not self.connected:
+                    break
+                time.sleep(0.5)
+        
+        if not self.game_over:
+            self.cleanup()
+
+    def receive_handler(self):
+        """Handle incoming messages in background thread"""
+        while self.connected:
+            msg = self.receive_message()
+            if msg:
+                if msg['type'] == 'move':
+                    self.opponent_move = msg['data']
+                    # Check if both have moved
+                    if self.my_move and self.opponent_move:
+                        self.resolve_round()
+                elif msg['type'] == 'reset':
+                    self.reset_round()
+                elif msg['type'] == 'quit':
+                    self.quit_game()
+                elif msg['type'] == 'handshake':
+                    # Reply to handshake
+                    self.send_message('handshake_ack', {'connected': True})
+            else:
+                # Connection lost
+                if self.connected:
+                    print(f"\n{self.RED}❌ Connection lost!{self.RESET}")
+                    self.connected = False
+                    self.game_over = True
+                break
+
+    def resolve_round(self):
+        """Determine round winner"""
+        if not self.my_move or not self.opponent_move:
+            return
+        
+        # Determine result
+        if self.my_move == self.opponent_move:
+            result = 'tie'
+            self.ties += 1
+        elif ((self.my_move == 'rock' and self.opponent_move == 'scissors') or
+              (self.my_move == 'scissors' and self.opponent_move == 'paper') or
+              (self.my_move == 'paper' and self.opponent_move == 'rock')):
+            result = 'win'
+            self.my_score += 1
+        else:
+            result = 'lose'
+            self.opponent_score += 1
+        
+        self.round_complete = True
+        
+        # Send result to opponent (if they haven't already computed it)
+        self.send_message('round_result', {
+            'my_move': self.my_move,
+            'opponent_move': self.opponent_move,
+            'result': result
+        })
+        
+        # Display result
+        self.print_header()
+        self.print_scoreboard()
+        self.print_moves()
+        self.print_result(result)
+        
+        # Update turn for next round (alternate)
+        self.my_turn = not self.my_turn
+
+    def reset_round(self):
+        """Reset for next round"""
+        self.my_move = None
+        self.opponent_move = None
+        self.round_complete = False
+        # Keep the turn as it was set in resolve_round
+
+    def quit_game(self):
+        """Quit the game"""
+        self.game_over = True
+        self.send_message('quit')
+        self.cleanup()
+
+    def cleanup(self):
+        """Close connections"""
+        self.connected = False
+        if self.connection:
+            try:
+                self.connection.close()
+            except:
+                pass
+        if self.socket:
+            try:
+                self.socket.close()
+            except:
+                pass
+        
+        self.print_header()
+        print(f"{self.YELLOW}👋 Game ended! Final scores:{self.RESET}")
+        self.print_scoreboard()
+        print(f"\n{self.GREEN}Thanks for playing!{self.RESET}")
+        input("\nPress Enter to exit...")
+        sys.exit(0)
+
+def main():
+    """Main entry point"""
+    print(f"{self.CYAN}{'='*60}{self.RESET}")
+    print(f"{self.BOLD}{self.MAGENTA}🌐 P2P ROCK-PAPER-SCISSORS 🌐{self.RESET}")
+    print(f"{self.CYAN}{'='*60}{self.RESET}")
+    print(f"\n{self.BOLD}Choose your role:{self.RESET}")
+    print(f"  1. {self.GREEN}Start as Server{self.RESET} (Wait for opponent to connect)")
+    print(f"  2. {self.BLUE}Connect to Server{self.RESET} (Join an existing game)")
+    print(f"  3. {self.RED}Exit{self.RESET}")
+    print(f"{self.CYAN}{'-'*60}{self.RESET}")
+    
+    choice = input(f"{self.BOLD}👉 Enter your choice (1-3): {self.RESET}").strip()
+    
+    game = RPSP2P()
+    
+    if choice == '1':
+        game.start_server()
+    elif choice == '2':
+        server_ip = input(f"{self.BOLD}Enter server IP address: {self.RESET}").strip()
+        if not server_ip:
+            server_ip = game.get_local_ip()
+            print(f"{self.YELLOW}💡 Using local IP: {server_ip}{self.RESET}")
+        game.connect_to_server(server_ip)
+    else:
+        print(f"{self.YELLOW}👋 Goodbye!{self.RESET}")
+        sys.exit(0)
+
+if __name__ == "__main__":
+    main()
